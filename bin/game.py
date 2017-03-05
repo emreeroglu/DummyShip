@@ -3,9 +3,9 @@ import threading
 
 
 class Space:
-    def __init__(self):
-        self.max_width = 500
-        self.max_height = 500
+    def __init__(self, width, height):
+        self.width = width
+        self.height = height
 
 
 class Bullet(Label):
@@ -25,7 +25,7 @@ class Bullet(Label):
             process = threading.Timer(self.bullet_timer, self.place_bullet, [x, y])
             process.start()
         else:
-            y += self.space.max_height
+            y += self.space.height
             self.place(x=x, y=y)
             process = threading.Timer(self.bullet_timer, self.place_bullet, [x, y])
             process.start()
@@ -37,8 +37,8 @@ class SpaceShip(Label):
         Label.__init__(self, text=self.ship_indicator)
         # initial coordinates
         self.space = space
-        self.x = space.max_width/2
-        self.y = space.max_height/2
+        self.x = space.width/2
+        self.y = space.height/2
         self.pack()
         self.place_ship()
         self.life = 100
@@ -68,14 +68,14 @@ class SpaceShip(Label):
         pass
 
     def place_ship(self):
-        if self.x > self.space.max_width:
-            self.x -= self.space.max_width
+        if self.x > self.space.width:
+            self.x -= self.space.width
         if self.x < 0:
-            self.x += self.space.max_width
-        if self.y > self.space.max_height:
-            self.y -= self.space.max_height
+            self.x += self.space.width
+        if self.y > self.space.height:
+            self.y -= self.space.height
         if self.y < 0:
-            self.y += self.space.max_height
+            self.y += self.space.height
         self.place(x=self.x, y=self.y)
 
     def shoot(self):
@@ -98,7 +98,7 @@ class SpaceShip(Label):
 
 
 class DummyGame(Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, space):
         Frame.__init__(self, parent)
 
         # Set game window arguments.
@@ -106,8 +106,10 @@ class DummyGame(Frame):
         self.pack(fill=BOTH, expand=1)
         self.bullet_count = 0
 
+        # Set space.
+        self.space = space
+
         # Set space ship.
-        self.space = Space()
         self.space_ship = SpaceShip(space=self.space)
         self.space_ship.bind_to(self.set_title)
         self.space_ship.bullet_count = 3
@@ -125,9 +127,17 @@ class DummyGame(Frame):
 
 
 def main():
+    space = Space(width=500, height=500)
     root = Tk()
-    root.geometry("500x500+300+300")
-    app = DummyGame(parent=root)
+
+    # Putting window to center of the screen
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    margin_x = int((screen_width - space.width) / 2)
+    margin_y = int((screen_height - space.height) / 2)
+    geometry = str(space.width) + "x" + str(space.height) + "+" + str(margin_x) + "+" + str(margin_y)
+    root.geometry(geometry)
+    app = DummyGame(parent=root, space=space)
     app.mainloop() 
     
 if __name__ == '__main__':
