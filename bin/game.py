@@ -12,7 +12,7 @@ class Bullet(Label):
     def __init__(self, x, y, space):
         self.space = space
         self.bullet_timer = 0.01
-        self.bullet_indicator = "`"
+        self.bullet_indicator = "'"
         Label.__init__(self, text=self.bullet_indicator)
         self.pack()
         process = threading.Thread(target=self.place_bullet(x=x, y=y))
@@ -33,7 +33,7 @@ class Bullet(Label):
 
 class SpaceShip(Label):
     def __init__(self, space):
-        self.ship_indicator = ","
+        self.ship_indicator = "."
         Label.__init__(self, text=self.ship_indicator)
         # initial coordinates
         self.space = space
@@ -118,8 +118,8 @@ class DummyGame(Frame):
         parent.bind('<Down>', self.space_ship.down_key)
         parent.bind('<space>', self.space_ship.space_key)
 
-    def set_title(self, bullet_count):
-        if bullet_count:
+    def set_title(self, bullet_count=None):
+        if bullet_count is not None:
             self.bullet_count = bullet_count
         self.parent.title("Dummy Space Ship - Bullet: " + str(self.bullet_count))
 
