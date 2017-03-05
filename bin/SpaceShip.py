@@ -48,7 +48,9 @@ class SpaceShip(Label):
 
     def shoot(self):
         if self.bullet_count > 0:
-            Bullet(x=self.x, y=self.y, space=self.space)
+            bullet = Bullet(x=self.x, y=self.y, space=self.space)
+            bullet.bind_to(self.hit)
+            bullet.start()
             self.bullet_count = -1
 
     def get_bullet_count(self):
@@ -61,10 +63,11 @@ class SpaceShip(Label):
 
     bullet_count = property(get_bullet_count, set_bullet_count)
 
-    def hit(self, object):
-        self._life = object.damage
-        if self._life <= 0:
-            self.destroy()
+    def hit(self, x, y, thing):
+        if self.x == x and self.y == y:
+            self.set_life(thing.damage)
+            if self._life <= 0:
+                self.destroy()
 
     def get_life(self):
         return self._life

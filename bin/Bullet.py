@@ -10,17 +10,36 @@ class Bullet(Label):
         self.damage = -100
         Label.__init__(self, text=self.bullet_indicator)
         self.pack()
-        process = threading.Thread(target=self.place_bullet(x=x, y=y))
+        self._x = x
+        self._y = y
+        self._observers = []
+
+    def start(self):
+        process = threading.Thread(target=self.place_bullet)
         process.start()
 
-    def place_bullet(self, x, y):
-        if y > 0:
-            y -= 1
-            self.place(x=x, y=y)
-            process = threading.Timer(self.bullet_timer, self.place_bullet, [x, y])
+    def place_bullet(self):
+        if self._y > 0:
+            self.set_y(-1)
+            self.place(x=self._x, y=self._y)
+            process = threading.Timer(self.bullet_timer, self.place_bullet, [])
             process.start()
         else:
-            y += self.space.height
-            self.place(x=x, y=y)
-            process = threading.Timer(self.bullet_timer, self.place_bullet, [x, y])
+            self.set_y(self.space.height)
+            self.place(x=self._x, y=self._y)
+            process = threading.Timer(self.bullet_timer, self.place_bullet, [])
             process.start()
+
+    def get_y(self):
+        return self._y
+
+    def set_y(self, value):
+        self._y += value
+        for callback in self._observers:
+            callback(x=self._x, y=self._y, thing=self)
+
+    y = property(get_y, set_y)
+
+    def bind_to(self, callback):
+        self._observers.append(callback)
+
