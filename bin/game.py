@@ -13,6 +13,7 @@ class Bullet(Label):
         self.space = space
         self.bullet_timer = 0.01
         self.bullet_indicator = "'"
+        self.damage = -100
         Label.__init__(self, text=self.bullet_indicator)
         self.pack()
         process = threading.Thread(target=self.place_bullet(x=x, y=y))
@@ -41,9 +42,9 @@ class SpaceShip(Label):
         self.y = space.height/2
         self.pack()
         self.place_ship()
-        self.life = 100
         self._observers = []
         self._bullet_count = 0
+        self._life = 0
 
     def left_key(self, event):
         self.x -= 10
@@ -63,9 +64,6 @@ class SpaceShip(Label):
 
     def space_key(self, event):
         self.shoot()
-
-    def hit(self, object):
-        pass
 
     def place_ship(self):
         if self.x > self.space.width:
@@ -89,9 +87,24 @@ class SpaceShip(Label):
     def set_bullet_count(self, value):
         self._bullet_count += value
         for callback in self._observers:
-            callback(self._bullet_count)
+            callback(bullet_count=self._bullet_count)
 
     bullet_count = property(get_bullet_count, set_bullet_count)
+
+    def hit(self, object):
+        self._life = object.damage
+        if self._life <= 0:
+            self.destroy()
+
+    def get_life(self):
+        return self._life
+
+    def set_life(self, value):
+        self._life += value
+        for callback in self._observers:
+            callback(life=self._life)
+
+    life = property(get_life, set_life)
 
     def bind_to(self, callback):
         self._observers.append(callback)
@@ -105,6 +118,7 @@ class DummyGame(Frame):
         self.parent = parent
         self.pack(fill=BOTH, expand=1)
         self.bullet_count = 0
+        self.life = 0
 
         # Set space.
         self.space = space
@@ -113,6 +127,7 @@ class DummyGame(Frame):
         self.space_ship = SpaceShip(space=self.space)
         self.space_ship.bind_to(self.set_title)
         self.space_ship.bullet_count = 3
+        self.space_ship.life = 100
 
         parent.bind('<Left>', self.space_ship.left_key)
         parent.bind('<Right>', self.space_ship.right_key)
@@ -120,10 +135,12 @@ class DummyGame(Frame):
         parent.bind('<Down>', self.space_ship.down_key)
         parent.bind('<space>', self.space_ship.space_key)
 
-    def set_title(self, bullet_count=None):
+    def set_title(self, bullet_count=None, life=None):
         if bullet_count is not None:
             self.bullet_count = bullet_count
-        self.parent.title("Dummy Space Ship - Bullet: " + str(self.bullet_count))
+        if life is not None:
+            self.life = life
+        self.parent.title("Dummy Space Ship - Bullet: " + str(self.bullet_count) + " Life: " + str(self.life))
 
 
 def main():
