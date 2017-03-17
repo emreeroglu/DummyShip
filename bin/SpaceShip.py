@@ -1,5 +1,9 @@
 from tkinter import Label
+import threading
+from random import randint
+
 from Bullet import Bullet
+from Enemy import Enemy
 
 
 class SpaceShip(Label):
@@ -13,8 +17,11 @@ class SpaceShip(Label):
         self.pack()
         self.place_ship()
         self._observers = []
+        self._bullets = set()
+        self._enemies = set()
         self._bullet_count = 0
         self._life = 0
+        self.enemy_generator()
 
     def left_key(self, event):
         self.x -= 10
@@ -50,7 +57,10 @@ class SpaceShip(Label):
         if self.bullet_count > 0:
             bullet = Bullet(x=self.x, y=self.y, space=self.space)
             bullet.bind_to(self.hit)
+            for enemy in self._enemies:
+                bullet.bind_to(enemy.hit)
             bullet.start()
+            self._bullets.add(bullet)
             self.bullet_count = -1
 
     def get_bullet_count(self):
@@ -63,9 +73,10 @@ class SpaceShip(Label):
 
     bullet_count = property(get_bullet_count, set_bullet_count)
 
-    def hit(self, x, y, thing):
-        if self.x == x and self.y == y:
+    def hit(self, thing):
+        if self.x == thing._x and self.y == thing._y:
             self.set_life(thing.damage)
+            thing.hit()
             if self._life <= 0:
                 self.destroy()
 
@@ -81,3 +92,15 @@ class SpaceShip(Label):
 
     def bind_to(self, callback):
         self._observers.append(callback)
+
+    def enemy_generator(self):
+        self.generate_enemy()
+        process = threading.Timer(randint(0, 5), self.enemy_generator, [])
+        process.start()
+
+    def generate_enemy(self):
+        enemy = Enemy(self.space)
+        self._enemies.add(enemy)
+        for bullet in self._bullets:
+            bullet.bind_to(enemy.hit)
+
