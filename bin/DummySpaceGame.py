@@ -1,6 +1,7 @@
 from tkinter import BOTH, Frame
 
 from SpaceShip import SpaceShip
+from Enemy import Enemy
 
 
 class DummySpaceGame(Frame):
@@ -15,6 +16,9 @@ class DummySpaceGame(Frame):
 
         # Set space.
         self.space = space
+
+        # Create enemy
+        self.enemy = Enemy
 
         # Set space ship.
         self.space_ship = SpaceShip(space=self.space)
