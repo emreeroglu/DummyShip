@@ -36,10 +36,12 @@ class Bullet(Label):
     def set_y(self, value):
         self._y += value
         for callback in self._observers:
-            callback(x=self._x, y=self._y, thing=self)
+            callback(thing=self)
 
     y = property(get_y, set_y)
 
     def bind_to(self, callback):
         self._observers.append(callback)
 
+    def hit(self):
+        self.destroy()
